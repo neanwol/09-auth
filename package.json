@@ -11,14 +11,15 @@
   "dependencies": {
     "@tanstack/react-query": "^5.28.0",
     "axios": "^1.6.0",
-    "zustand": "^4.3.10",
+    "cookie": "^1.1.1",
     "formik": "^2.4.9",
     "next": "16.1.6",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-paginate": "^8.3.0",
     "use-debounce": "^10.1.0",
-    "yup": "^1.7.1"
+    "yup": "^1.7.1",
+    "zustand": "^4.3.10"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
