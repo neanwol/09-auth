@@ -1,5 +1,6 @@
 // proxy.ts
 import { NextRequest, NextResponse } from 'next/server';
+import { cookies } from 'next/headers'; // ← Зміна: імпортуємо cookies
 import { checkSession } from './lib/api/serverApi';
 
 // Публічні маршрути (доступні без авторизації)
@@ -26,9 +27,10 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Отримуємо cookies з запиту
-  const accessToken = request.cookies.get('accessToken')?.value;
-  const refreshToken = request.cookies.get('refreshToken')?.value;
+  // ВИПРАВЛЕНО: Використовуємо асинхронну функцію cookies()
+  const cookieStore = await cookies();
+  const accessToken = cookieStore.get('accessToken')?.value;
+  const refreshToken = cookieStore.get('refreshToken')?.value;
 
   try {
     let isAuthenticated = false;
@@ -66,18 +68,18 @@ export async function proxy(request: NextRequest) {
       }
     }
 
-    // Якщо користувач авторизований і намагається зайти на public route
+
     if (isAuthenticated && isPublicRoute) {
       response = NextResponse.redirect(new URL('/', request.url));
     }
-    // Якщо користувач не авторизований і намагається зайти на private route
+
     else if (!isAuthenticated && isPrivateRoute) {
       response = NextResponse.redirect(new URL('/sign-in', request.url));
     }
 
     return response;
   } catch (error) {
-    // У випадку помилки перенаправляємо на login для приватних маршрутів
+ 
     if (isPrivateRoute) {
       return NextResponse.redirect(new URL('/sign-in', request.url));
     }
