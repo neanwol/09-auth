@@ -2,7 +2,7 @@
 "use client";
 
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { fetchNotes } from "@/lib/api";
+import { fetchNotes } from "@/lib/api/api";
 import css from "./notes.module.css";
 
 import Pagination from "@/components/Pagination/Pagination";

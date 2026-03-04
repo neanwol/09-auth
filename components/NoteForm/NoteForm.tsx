@@ -3,8 +3,8 @@
 import { useRouter } from 'next/navigation';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import css from './NoteForm.module.css';
-import { createNote } from '@/lib/api';
-import useNoteStore, { initialDraft } from '@/lib/store/noteStore';
+import { createNote } from '@/lib/api/clientApi';
+import { useNoteDraftStore } from '@/lib/store/noteStore';
 import { ChangeEvent } from 'react';
 
 interface NoteFormProps {
@@ -14,9 +14,9 @@ interface NoteFormProps {
 export default function NoteForm({ onClose }: NoteFormProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const draft = useNoteStore((s) => s.draft);
-  const setDraft = useNoteStore((s) => s.setDraft);
-  const clearDraft = useNoteStore((s) => s.clearDraft);
+  const draft = useNoteDraftStore((s) => s.draft);
+  const setDraft = useNoteDraftStore((s) => s.setDraft);
+  const clearDraft = useNoteDraftStore((s) => s.clearDraft);
 
   const mutation = useMutation({
     mutationFn: createNote,
@@ -48,7 +48,6 @@ export default function NoteForm({ onClose }: NoteFormProps) {
     if (onClose) onClose();
   };
 
-  const values = draft ?? initialDraft;
 
   return (
     <form className={css.form} onSubmit={handleSubmit}>
@@ -59,7 +58,7 @@ export default function NoteForm({ onClose }: NoteFormProps) {
           name="title"
           type="text"
           className={css.input}
-          value={values.title}
+          value={draft.title}
           onChange={handleChange}
         />
       </div>
@@ -71,14 +70,14 @@ export default function NoteForm({ onClose }: NoteFormProps) {
           name="content"
           rows={8}
           className={css.textarea}
-          value={values.content}
+          value={draft.content}
           onChange={handleChange}
         />
       </div>
 
       <div className={css.formGroup}>
         <label htmlFor="tag">Tag</label>
-        <select id="tag" name="tag" className={css.select} value={values.tag} onChange={handleChange}>
+        <select id="tag" name="tag" className={css.select} value={draft.tag} onChange={handleChange}>
           <option value="Todo">Todo</option>
           <option value="Work">Work</option>
           <option value="Personal">Personal</option>

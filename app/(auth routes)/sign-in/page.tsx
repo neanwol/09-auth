@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { login } from "@/lib/clientApi";
-import { LoginRequest } from "@/lib/api";
+import { login } from "@/lib/api/clientApi";
+import { LoginRequest } from "@/lib/api/api";
 import { ApiError } from "@/app/api/api";
 import { useAuthStore } from "@/lib/store/authStore";
 
