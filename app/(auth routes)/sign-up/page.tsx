@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { register } from '@/lib/api/clientApi'; 
 import { RegisterRequest } from '@/lib/api/clientApi';
-import { ApiError } from '@/app/api/api';
+import { AxiosError } from "axios";
 import { useAuthStore } from '@/lib/store/authStore';
 
 
@@ -27,11 +27,12 @@ const handleSubmit = async(formData: FormData) => {
   }
   } catch(error) {
      console.log("REGISTER ERROR:", error);
-    setError(
-      (error as ApiError).response?.data?.error ??
-      (error as ApiError).message ??
-       'Oops... some error'
-    );
+  const axiosError = error as AxiosError<{ error: string }>;
+      setError(
+        axiosError.response?.data?.error ??
+        axiosError.message ??
+        'Oops... some error'
+      );
 
   }
  

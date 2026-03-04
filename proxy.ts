@@ -26,14 +26,35 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Отримуємо cookies з запиту
+  const accessToken = request.cookies.get('accessToken')?.value;
+  const refreshToken = request.cookies.get('refreshToken')?.value;
+
   try {
-    // Перевіряємо сесію користувача
-    const session = await checkSession();
-    const isAuthenticated = !!session;
+    let isAuthenticated = false;
+
+    // Якщо є accessToken - користувач авторизований
+    if (accessToken) {
+      isAuthenticated = true;
+    } 
+    // Якщо немає accessToken, але є refreshToken - пробуємо оновити сесію
+    else if (refreshToken) {
+      try {
+        const session = await checkSession();
+        isAuthenticated = !!session;
+        
+        // Тут бекенд має встановити нові cookies автоматично
+        // (з withCredentials: true)
+      } catch (refreshError) {
+        console.error('Session refresh failed:', refreshError);
+        isAuthenticated = false;
+      }
+    }
 
     // Якщо користувач авторизований і намагається зайти на public route
     if (isAuthenticated && isPublicRoute) {
-      return NextResponse.redirect(new URL('/profile', request.url));
+      // Редирект на головну сторінку, а не на /profile
+      return NextResponse.redirect(new URL('/', request.url));
     }
 
     // Якщо користувач не авторизований і намагається зайти на private route
@@ -44,7 +65,7 @@ export async function proxy(request: NextRequest) {
     // В інших випадках пропускаємо
     return NextResponse.next();
   } catch (error) {
-    // У випадку помилки перенаправляємо на login
+    // У випадку помилки перенаправляємо на login для приватних маршрутів
     if (isPrivateRoute) {
       return NextResponse.redirect(new URL('/sign-in', request.url));
     }
@@ -54,13 +75,10 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public folder
-     */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    // Обмежуємо тільки потрібними маршрутами
+    '/profile/:path*',
+    '/notes/:path*',
+    '/sign-in',
+    '/sign-up',
   ],
 };

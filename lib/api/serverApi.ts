@@ -1,4 +1,4 @@
-// lib/api/serverApi.ts
+
 import { api } from './api';
 import { cookies } from 'next/headers';
 import { User } from "@/types/user";
@@ -36,12 +36,15 @@ export async function getMe() {
   }
 }
 
+
 export async function checkSession() {
   const headers = await getHeaders();
   try {
-    const res = await api.get("/auth/session", { headers });
-    return res.status === 200;
-  } catch {
-    return false;
+
+    const response = await api.get("/auth/session", { headers });
+    return response;  
+  } catch (error) {
+
+    throw error;  
   }
 }

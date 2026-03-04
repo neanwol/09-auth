@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { login } from "@/lib/api/clientApi";
 import { LoginRequest } from "@/lib/api/clientApi";
-import { ApiError } from "@/app/api/api";
+import { AxiosError } from "axios"; 
 import { useAuthStore } from "@/lib/store/authStore";
 
 import css from "./SignInPage.module.css";
@@ -27,9 +27,10 @@ export default function SignInPage() {
         setError("Invalid email or password");
       }
     } catch (error) {
+        const axiosError = error as AxiosError<{ error: string }>;
       setError(
-        (error as ApiError).response?.data?.error ??
-          (error as ApiError).message ??
+        axiosError.response?.data?.error ??
+          axiosError.message ??
           "Oops... some error",
       );
     }
@@ -67,7 +68,7 @@ export default function SignInPage() {
           </button>
         </div>
 
-        {error && <p className={css.error}>Error</p>}
+          {error && <p className={css.error}>{error}</p>}
       </form>
     </main>
   );
