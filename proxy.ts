@@ -8,7 +8,7 @@ const publicRoutes = ['/sign-in', '/sign-up'];
 // Приватні маршрути (тільки для авторизованих)
 const privateRoutes = ['/profile', '/notes'];
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   
   // Перевіряємо чи це публічний маршрут
