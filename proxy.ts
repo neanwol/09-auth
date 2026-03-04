@@ -32,6 +32,7 @@ export async function proxy(request: NextRequest) {
 
   try {
     let isAuthenticated = false;
+    let response = NextResponse.next();
 
     // Якщо є accessToken - користувач авторизований
     if (accessToken) {
@@ -40,11 +41,25 @@ export async function proxy(request: NextRequest) {
     // Якщо немає accessToken, але є refreshToken - пробуємо оновити сесію
     else if (refreshToken) {
       try {
-        const session = await checkSession();
-        isAuthenticated = !!session;
+        const sessionResponse = await checkSession();
+        isAuthenticated = !!sessionResponse;
         
-        // Тут бекенд має встановити нові cookies автоматично
-        // (з withCredentials: true)
+        // ВАЖЛИВО: Перевіряємо чи є нові cookies у відповіді
+        const setCookieHeader = sessionResponse.headers?.['set-cookie'];
+        
+        if (setCookieHeader) {
+          // Якщо є нові cookies - додаємо їх до відповіді
+          response = NextResponse.next();
+          
+          // Парсимо та встановлюємо кожну cookie
+          const cookies = Array.isArray(setCookieHeader) 
+            ? setCookieHeader 
+            : [setCookieHeader];
+            
+          cookies.forEach(cookie => {
+            response.headers.append('Set-Cookie', cookie);
+          });
+        }
       } catch (refreshError) {
         console.error('Session refresh failed:', refreshError);
         isAuthenticated = false;
@@ -53,17 +68,14 @@ export async function proxy(request: NextRequest) {
 
     // Якщо користувач авторизований і намагається зайти на public route
     if (isAuthenticated && isPublicRoute) {
-      // Редирект на головну сторінку, а не на /profile
-      return NextResponse.redirect(new URL('/', request.url));
+      response = NextResponse.redirect(new URL('/', request.url));
     }
-
     // Якщо користувач не авторизований і намагається зайти на private route
-    if (!isAuthenticated && isPrivateRoute) {
-      return NextResponse.redirect(new URL('/sign-in', request.url));
+    else if (!isAuthenticated && isPrivateRoute) {
+      response = NextResponse.redirect(new URL('/sign-in', request.url));
     }
 
-    // В інших випадках пропускаємо
-    return NextResponse.next();
+    return response;
   } catch (error) {
     // У випадку помилки перенаправляємо на login для приватних маршрутів
     if (isPrivateRoute) {
@@ -75,7 +87,6 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Обмежуємо тільки потрібними маршрутами
     '/profile/:path*',
     '/notes/:path*',
     '/sign-in',
