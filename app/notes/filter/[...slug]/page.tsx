@@ -1,4 +1,4 @@
-import { fetchNotes } from "@/lib/api/api";
+import { fetchNotes } from "@/lib/api/serverApi";
 import type { Metadata } from 'next';
 import {
   QueryClient,
